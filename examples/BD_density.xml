@@ -6,18 +6,18 @@
     <run spec="DensityMapper">
         <distribution id="distrib" spec="HOBirthDeathModel" tree="@tree">
             <birthRate idref="birthRate"/>
-            <deathRate spec="RealParameter" value="0.5"/>
-            <samplingRate spec="RealParameter" value="0.5"/>
-            <presentSamplingProb spec="RealParameter" value="0.5"/>
-            <timeOrigin spec="RealParameter" value="5.0"/>
+            <deathRate idref="deathRate"/>
+            <samplingRate idref="samplingRate"/>
+            <presentSamplingProb spec="RealParameter" value="0.5" id="presentSamplingProb"/>
+            <timeOrigin spec="RealParameter" value="5.0" id="origin"/>
         </distribution>
 
-        <distribution id="distrib_bdsky" spec="BirthDeathSkylineModel" tree="@tree">
+        <distribution id="distrib_bdsky" spec="BirthDeathSkylineModel" tree="@tree" conditionOnSurvival="false" conditionOnRhoSampling="false">
             <birthRate idref="birthRate"/>
-            <deathRate spec="RealParameter" value="0.5"/>
-            <samplingRate spec="RealParameter" value="0.5"/>
-            <rho spec="RealParameter" value="0.5"/>
-            <origin spec="RealParameter" value="5.0"/>
+            <deathRate idref="deathRate"/>
+            <samplingRate idref="samplingRate"/>
+            <rho idref="presentSamplingProb"/>
+            <origin idref="origin"/>
         </distribution>
 
         <realParam spec="RealParameter" id="birthRate"
@@ -26,17 +26,32 @@
                value="21"/>
         <logScale spec="BooleanParameter" value="false"/>
 
+        <realParam spec="RealParameter" id="deathRate"
+                   value="0.5" lower="0.5" upper="2"/>
+        <steps spec="IntegerParameter"
+               value="1"/>
+        <logScale spec="BooleanParameter" value="false"/>
+
+        <realParam spec="RealParameter" id="samplingRate"
+                   value="0.5" lower="0.5" upper="2"/>
+        <steps spec="IntegerParameter"
+               value="1"/>
+        <logScale spec="BooleanParameter" value="false"/>
+
         <logger spec="Logger" logEvery="1">
             <log idref="birthRate"/>
+            <log idref="deathRate"/>
+            <log idref="samplingRate"/>
             <log idref="distrib"/>
             <log idref="distrib_bdsky"/>
         </logger>
 
         <logger spec="Logger" logEvery="1" fileName="$(filebase).log">
             <log idref="birthRate"/>
+            <log idref="deathRate"/>
+            <log idref="samplingRate"/>
             <log idref="distrib"/>
             <log idref="distrib_bdsky"/>
-
         </logger>
 
     </run>

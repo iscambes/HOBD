@@ -39,28 +39,33 @@ public class HOBirthDeathModel extends SpeciesTreeDistribution {
 
     }
 
-    double c1() {
-        return Math.abs(Math.sqrt(Math.pow(birthRate.getValue()-deathRate.getValue()-samplingRate.getValue(), 2.0)
-                + 4*birthRate.getValue()*samplingRate.getValue()));
+    double get_c1(double b, double d, double s) {
+        return Math.sqrt((b - d - s)*(b - d - s) + 4*b*s);
     }
 
-    double c2() {
-        return Math.abs(-((birthRate.getValue()-deathRate.getValue()-(2*birthRate.getValue()*presentSamplingProb.getValue())-samplingRate.getValue())/c1()));
-
+    double get_c2(double b, double d, double s, double rho, double c1) {
+        return -(b - d - 2*b*rho - s)/c1;
     }
 
-    double p0(double t) {
-        return Math.abs(((birthRate.getValue()+deathRate.getValue()+samplingRate.getValue())+c1()*((-(1+c2())+(1-c2())*Math.exp(-c1()*t))
-                /((1+c2())+(1-c2())*Math.exp(-c1()*t))))/(2*birthRate.getValue()));
+    double get_p0(double t, double b, double d, double s, double c1, double c2) {
+
+        return (b + d + s
+                + c1*(Math.exp(-c1*t)*(1 - c2) - (1 + c2)) / (Math.exp(-c1*t)*(1 - c2) + (1 + c2)))
+                / 2.0*b;
     }
 
-    double q(double t) {
-        return Math.abs((2*(1-(Math.pow(c2(), 2.0))))+((Math.exp(-c1()*t))*(Math.pow(1-c2(), 2.0)))+(((Math.exp(c1()*t))*(Math.pow(1+c2(), 2.0)))));
+    double get_q(double t, double c1, double c2) {
+
+        return 2*(1 - c2*c2) + Math.exp(-c1*t)*Math.pow(1-c2,2.0) + Math.exp(c1*t)*Math.pow(1+c2, 2.0);
     }
 
     @Override
     public double calculateTreeLogLikelihood(TreeInterface tree) {
         logP = 0.0;
+
+        double c1 = get_c1(birthRate.getValue(), deathRate.getValue(), samplingRate.getValue());
+        double c2 = get_c2(birthRate.getValue(), deathRate.getValue(), samplingRate.getValue(), presentSamplingProb.getValue(), c1);
+
 
         Node[] treeNodes = tree.getNodesAsArray();
         for (Node thisNode : treeNodes) {
@@ -68,20 +73,25 @@ public class HOBirthDeathModel extends SpeciesTreeDistribution {
                 if (thisNode.getHeight() > 0.0) {
                     // psi-sample
 
-                    logP = logP + Math.log(samplingRate.getValue()) + Math.log(p0(thisNode.getHeight()) * q(thisNode.getHeight()));
+                    logP = logP + Math.log(samplingRate.getValue())
+                            + Math.log(get_q(thisNode.getHeight(), c1, c2));
+//                            + Math.log(get_p0(thisNode.getHeight(),
+//                                    birthRate.getValue(),
+//                                    deathRate.getValue(),
+//                                    samplingRate.getValue(), c1, c2));
                 } else {
                     // sample at present day
 
-                    logP = logP + Math.log((4.0 * presentSamplingProb.getValue()));
+                    logP = logP + Math.log(4.0 * presentSamplingProb.getValue());
                 }
             } else {
                 // coalescence node
 
-                logP = logP + Math.log(birthRate.getValue()) + Math.log(1.0 / q(thisNode.getHeight()));
+                logP = logP + Math.log(birthRate.getValue()) - Math.log(get_q(thisNode.getHeight(), c1, c2));
             }
         }
 
-        logP = logP - Math.log(q(timeOrigin.getValue()));
+        logP = logP - Math.log(get_q(timeOrigin.getValue(), c1, c2));
 
         return logP;
     }
@@ -97,10 +107,5 @@ public class HOBirthDeathModel extends SpeciesTreeDistribution {
                 "presentSamplingProb", new RealParameter("0.2"),
                 "timeOrigin", new RealParameter("5.0"),
                 "tree", tree);
-
-        System.out.println("c1 = " + hobd.c1());
-        System.out.println("c2 = " + hobd.c2());
-        System.out.println("p0(t) = " + hobd.p0(1.0));
-        System.out.println("q(t) = " + hobd.q(1.0));
     }
 }
