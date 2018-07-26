@@ -260,6 +260,10 @@
         <log id="ESS.0" spec="util.ESS" arg="@posterior"/>
         <log idref="likelihood"/>
         <log idref="prior"/>
+        <parameter idref="BDBirthRate.t:Kailahun" name="log"/>
+        <parameter idref="BDDeathRate.t:Kailahun" name="log"/>
+        <parameter idref="BDSamplingRate.t:Kailahun" name="log"/>
+        <parameter idref="BDOriginTime.t:Kailahun" name="log"/>
     </logger>
 
     <logger id="treelog.t:Kailahun" fileName="$(filebase).trees" logEvery="1000" mode="tree">

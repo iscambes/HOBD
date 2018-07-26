@@ -61,7 +61,11 @@ public class BirthDeathModelAnalytic extends SpeciesTreeDistribution {
 
     @Override
     public double calculateTreeLogLikelihood(TreeInterface tree) {
-        logP = 0.0;
+
+        if (tree.getRoot().getHeight() > timeOrigin.getValue())
+            return Double.NEGATIVE_INFINITY;
+
+        double logP = 0.0;
 
         double c1 = get_c1(birthRate.getValue(), deathRate.getValue(), samplingRate.getValue());
         double c2 = get_c2(birthRate.getValue(), deathRate.getValue(), samplingRate.getValue(), presentSamplingProb.getValue(), c1);
@@ -95,6 +99,12 @@ public class BirthDeathModelAnalytic extends SpeciesTreeDistribution {
 
         return logP;
     }
+
+    @Override
+    protected boolean requiresRecalculation() {
+        return true;
+    }
+
 
     public static void main(String[] args) {
 
