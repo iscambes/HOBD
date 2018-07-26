@@ -11,7 +11,7 @@ import org.apache.commons.math3.exception.MaxCountExceededException;
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math3.ode.nonstiff.EulerIntegrator;
 
-public class tete extends SpeciesTreeDistribution {
+public class BirthDeathModelNumeric extends SpeciesTreeDistribution {
 
     public Input<RealParameter> birthRateInput = new Input<>("birthRate",
             "Per-individual birth rate.", Input.Validate.REQUIRED);
@@ -65,8 +65,7 @@ public class tete extends SpeciesTreeDistribution {
 
             double p0 = y[0];
 
-            yDot[0] = -(lambda+mu+psi)*p0+(2*lambda*0.27*p0) ;
-
+            yDot[0] = mu-(lambda+mu+psi)*p0+(lambda*Math.pow(p0,2));
         }
     }
 
@@ -99,7 +98,7 @@ public class tete extends SpeciesTreeDistribution {
 
     public static void main(String[] args) {
 
-        tete bdmodel = new tete();
+        BirthDeathModelNumeric bdmodel = new BirthDeathModelNumeric();
 
         TreeParser tree = new TreeParser("(A:1.0, B:1.0):0.0;");
         bdmodel.initByName("birthRate", new RealParameter("1.0"),

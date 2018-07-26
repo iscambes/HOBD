@@ -7,7 +7,7 @@ import beast.evolution.tree.Node;
 import beast.evolution.tree.TreeInterface;
 import beast.util.TreeParser;
 
-public class HOBirthDeathModel extends SpeciesTreeDistribution {
+public class BirthDeathModelAnalytic extends SpeciesTreeDistribution {
 
     public Input<RealParameter> birthRateInput = new Input<>("birthRate",
             "Per-individual birth rate.", Input.Validate.REQUIRED);
@@ -39,15 +39,15 @@ public class HOBirthDeathModel extends SpeciesTreeDistribution {
 
     }
 
-    double get_c1(double b, double d, double s) {
+    public double get_c1(double b, double d, double s) {
         return Math.sqrt((b - d - s)*(b - d - s) + 4*b*s);
     }
 
-    double get_c2(double b, double d, double s, double rho, double c1) {
+    public double get_c2(double b, double d, double s, double rho, double c1) {
         return -(b - d - 2*b*rho - s)/c1;
     }
 
-    double get_p0(double t, double b, double d, double s, double c1, double c2) {
+    public double get_p0(double t, double b, double d, double s, double c1, double c2) {
 
         return (b + d + s
                 + c1*(Math.exp(-c1*t)*(1 - c2) - (1 + c2)) / (Math.exp(-c1*t)*(1 - c2) + (1 + c2)))
@@ -70,7 +70,7 @@ public class HOBirthDeathModel extends SpeciesTreeDistribution {
         Node[] treeNodes = tree.getNodesAsArray();
         for (Node thisNode : treeNodes) {
             if (thisNode.isLeaf()) {
-                if (thisNode.getHeight() > 0.0) {
+                if (thisNode.getHeight() > 0.0 || presentSamplingProb.getValue() == 0.0) {
                     // psi-sample
 
                     logP = logP + Math.log(samplingRate.getValue())
@@ -98,14 +98,26 @@ public class HOBirthDeathModel extends SpeciesTreeDistribution {
 
     public static void main(String[] args) {
 
-        HOBirthDeathModel hobd = new HOBirthDeathModel();
+        double b = 1.0, d = 0.5, s = 0.6, rho = 0.2, t0= 5.0;
+
+        BirthDeathModelAnalytic bdmodel = new BirthDeathModelAnalytic();
 
         TreeParser tree = new TreeParser("(A:1.0, B:1.0):0.0;");
-        hobd.initByName("birthRate", new RealParameter("1.0"),
-                "deathRate", new RealParameter("0.5"),
-                "samplingRate", new RealParameter("0.6"),
-                "presentSamplingProb", new RealParameter("0.2"),
-                "timeOrigin", new RealParameter("5.0"),
+        bdmodel.initByName("birthRate", new RealParameter(String.valueOf(b)),
+                "deathRate", new RealParameter(String.valueOf(d)),
+                "samplingRate", new RealParameter(String.valueOf(s)),
+                "presentSamplingProb", new RealParameter(String.valueOf(rho)),
+                "timeOrigin", new RealParameter(String.valueOf(t0)),
                 "tree", tree);
+
+
+        double c1 = bdmodel.get_c1(b, d, s);
+        double c2 = bdmodel.get_c2(b, d, s, rho, c1);
+
+        double res = bdmodel.get_q(5.0, c1, c2);
+        double tete = bdmodel.get_p0(5.0, b, d, s, c1, c2);
+
+
+        System.out.println("q = " + res);
     }
 }
