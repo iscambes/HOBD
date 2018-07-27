@@ -65,7 +65,7 @@ public class BirthDeathModelNumeric extends SpeciesTreeDistribution {
 
             double p0 = y[0];
 
-            yDot[0] = mu-(lambda+mu+psi)*p0+(lambda*Math.pow(p0,2));
+            yDot[0] = mu - (lambda+mu+psi)*p0 + lambda*p0*p0;
         }
     }
 
@@ -74,7 +74,7 @@ public class BirthDeathModelNumeric extends SpeciesTreeDistribution {
         ODEp0 p0equations = new ODEp0(birthRate.getValue(), deathRate.getValue(),
                 samplingRate.getValue(), presentSamplingProb.getValue());
 
-        EulerIntegrator eulerIntegrator = new EulerIntegrator(0.01);
+        EulerIntegrator eulerIntegrator = new EulerIntegrator(0.001);
 
         double [] startState = {1 - presentSamplingProb.getValue()};
         double [] intermediateState = new double[1];
@@ -98,23 +98,37 @@ public class BirthDeathModelNumeric extends SpeciesTreeDistribution {
 
     public static void main(String[] args) {
 
-        BirthDeathModelNumeric bdmodel = new BirthDeathModelNumeric();
+        double d = 0.5, s = 0.6, rho = 0.2, t0= 5.0;
 
         TreeParser tree = new TreeParser("(A:1.0, B:1.0):0.0;");
-        bdmodel.initByName("birthRate", new RealParameter("1.0"),
-                "deathRate", new RealParameter("0.5"),
-                "samplingRate", new RealParameter("0.6"),
-                "presentSamplingProb", new RealParameter("0.2"),
-                "timeOrigin", new RealParameter("5.0"),
-                "tree", tree);
 
-        bdmodel.get_p0(5.0);
+        for (double b = 0.5; b<= 1.5; b += 0.1) {
 
-        double res = bdmodel.get_p0(5.0);
+            BirthDeathModelNumeric bdmodelNumeric = new BirthDeathModelNumeric();
+            BirthDeathModelAnalytic bdmodelAnalytic = new BirthDeathModelAnalytic();
 
-        System.out.println(res);
+            bdmodelNumeric.initByName("birthRate", new RealParameter(String.valueOf(b)),
+                    "deathRate", new RealParameter(String.valueOf(d)),
+                    "samplingRate", new RealParameter(String.valueOf(s)),
+                    "presentSamplingProb", new RealParameter(String.valueOf(rho)),
+                    "timeOrigin", new RealParameter(String.valueOf(t0)),
+                    "tree", tree);
 
+            bdmodelAnalytic.initByName("birthRate", new RealParameter(String.valueOf(b)),
+                    "deathRate", new RealParameter(String.valueOf(d)),
+                    "samplingRate", new RealParameter(String.valueOf(s)),
+                    "presentSamplingProb", new RealParameter(String.valueOf(rho)),
+                    "timeOrigin", new RealParameter(String.valueOf(t0)),
+                    "tree", tree);
 
+            double c1 = bdmodelAnalytic.get_c1(b, d, s);
+            double c2 = bdmodelAnalytic.get_c2(b, d, s, rho, c1);
 
+            double p0analytic = bdmodelAnalytic.get_p0(t0, b, d, s, c1, c2);
+
+            double p0numeric = bdmodelNumeric.get_p0(t0);
+
+            System.out.println(b + "\t" + p0analytic + "\t" + p0numeric);
+        }
     }
 }
