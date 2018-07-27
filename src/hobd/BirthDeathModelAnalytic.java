@@ -40,7 +40,7 @@ public class BirthDeathModelAnalytic extends SpeciesTreeDistribution {
     }
 
     public double get_c1(double b, double d, double s) {
-        return Math.sqrt((b - d - s)*(b - d - s) + 4*b*s);
+        return Math.abs(Math.sqrt((b - d - s)*(b - d - s) + 4*b*s));
     }
 
     public double get_c2(double b, double d, double s, double rho, double c1) {
@@ -51,7 +51,7 @@ public class BirthDeathModelAnalytic extends SpeciesTreeDistribution {
 
         return (b + d + s
                 + c1*(Math.exp(-c1*t)*(1 - c2) - (1 + c2)) / (Math.exp(-c1*t)*(1 - c2) + (1 + c2)))
-                / 2.0*b;
+                / (2.0*b);
     }
 
     double get_q(double t, double c1, double c2) {

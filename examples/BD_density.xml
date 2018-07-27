@@ -29,13 +29,13 @@
         <realParam spec="RealParameter" id="deathRate"
                    value="0.5" lower="0.5" upper="2"/>
         <steps spec="IntegerParameter"
-               value="1"/>
+               value="21"/>
         <logScale spec="BooleanParameter" value="false"/>
 
         <realParam spec="RealParameter" id="samplingRate"
                    value="0.5" lower="0.5" upper="2"/>
         <steps spec="IntegerParameter"
-               value="1"/>
+               value="21"/>
         <logScale spec="BooleanParameter" value="false"/>
 
         <logger spec="Logger" logEvery="1">
