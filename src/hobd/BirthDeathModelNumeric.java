@@ -8,8 +8,11 @@ import beast.evolution.tree.TreeInterface;
 import beast.util.TreeParser;
 import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.exception.MaxCountExceededException;
+import org.apache.commons.math3.ode.AbstractIntegrator;
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
+import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math3.ode.nonstiff.EulerIntegrator;
+import org.apache.commons.math3.ode.nonstiff.RungeKuttaIntegrator;
 
 public class BirthDeathModelNumeric extends SpeciesTreeDistribution {
 
@@ -65,7 +68,7 @@ public class BirthDeathModelNumeric extends SpeciesTreeDistribution {
 
             double p0 = y[0];
 
-            yDot[0] = mu - (lambda+mu+psi)*p0 + lambda*p0*p0;
+            yDot[0] = -(lambda + mu + psi)*p0 + mu + lambda*p0*p0;
         }
     }
 
@@ -74,15 +77,16 @@ public class BirthDeathModelNumeric extends SpeciesTreeDistribution {
         ODEp0 p0equations = new ODEp0(birthRate.getValue(), deathRate.getValue(),
                 samplingRate.getValue(), presentSamplingProb.getValue());
 
-        EulerIntegrator eulerIntegrator = new EulerIntegrator(0.001);
+        // AbstractIntegrator integrator = new EulerIntegrator(0.001);
+        AbstractIntegrator integrator = new ClassicalRungeKuttaIntegrator(0.001);
 
-        double [] startState = {1 - presentSamplingProb.getValue()};
-        double [] intermediateState = new double[1];
-        eulerIntegrator.integrate(p0equations, 0, startState, t, intermediateState);
+        double [] state = {1 - presentSamplingProb.getValue()};
 
-        double p0final = intermediateState[0];
+        if (t>0) {
+            integrator.integrate(p0equations, 0, state, t, state);
+        }
 
-        return p0final;
+        return state[0];
     }
 
     public class ODEgep0 implements FirstOrderDifferentialEquations {
@@ -133,15 +137,13 @@ public class BirthDeathModelNumeric extends SpeciesTreeDistribution {
 
     public static void main(String[] args) {
 
-        double d = 0.5, s = 0.6, rho = 0.2, t0= 5.0;
+        double d = 0.5, s = 0.6, rho = 0.2, t0 = 5.0, t = 2.0;
 
         TreeParser tree = new TreeParser("(A:1.0, B:1.0):0.0;");
 
         for (double b = 0.5; b<= 1.5; b += 0.1) {
 
             BirthDeathModelNumeric bdmodelNumeric = new BirthDeathModelNumeric();
-            BirthDeathModelAnalytic bdmodelAnalytic = new BirthDeathModelAnalytic();
-
             bdmodelNumeric.initByName("birthRate", new RealParameter(String.valueOf(b)),
                     "deathRate", new RealParameter(String.valueOf(d)),
                     "samplingRate", new RealParameter(String.valueOf(s)),
@@ -149,6 +151,9 @@ public class BirthDeathModelNumeric extends SpeciesTreeDistribution {
                     "timeOrigin", new RealParameter(String.valueOf(t0)),
                     "tree", tree);
 
+            double p0numeric = bdmodelNumeric.get_p0(t);
+
+            BirthDeathModelAnalytic bdmodelAnalytic = new BirthDeathModelAnalytic();
             bdmodelAnalytic.initByName("birthRate", new RealParameter(String.valueOf(b)),
                     "deathRate", new RealParameter(String.valueOf(d)),
                     "samplingRate", new RealParameter(String.valueOf(s)),
@@ -159,9 +164,7 @@ public class BirthDeathModelNumeric extends SpeciesTreeDistribution {
             double c1 = bdmodelAnalytic.get_c1(b, d, s);
             double c2 = bdmodelAnalytic.get_c2(b, d, s, rho, c1);
 
-            double p0analytic = bdmodelAnalytic.get_p0(t0, b, d, s, c1, c2);
-
-            double p0numeric = bdmodelNumeric.get_p0(t0);
+            double p0analytic = bdmodelAnalytic.get_p0(t, b, d, s, c1, c2);
 
             System.out.println(b + "\t" + p0analytic + "\t" + p0numeric);
         }
