@@ -85,13 +85,48 @@ public class BirthDeathModelNumeric extends SpeciesTreeDistribution {
         return p0final;
     }
 
-    double get_ge(double t) {
+    public class ODEgep0 implements FirstOrderDifferentialEquations {
+
+        double lambda, mu, psi, rho;
+
+        public ODEgep0(double lambda, double mu, double psi, double rho) {
+            this.lambda = lambda;
+            this.mu = mu;
+            this.psi = psi;
+            this.rho = rho;
+        }
+
+
+        @Override
+        public int getDimension() {
+            return 2;
+        }
+
+        @Override
+        public void computeDerivatives(double t, double[] y, double[] yDot) {
+
+            double p0 = y[0];
+            double ge = y[1];
+
+            double p0Dot = ;
+            double geDot = ;
+
+            yDot[0] = p0Dot;
+            yDot[1] = geDot;
+        }
+    }
+
+    double get_ge(double t, Node node) {
+
+
         return 0;
     }
 
     @Override
     public double calculateTreeLogLikelihood(TreeInterface tree) {
-        logP = 0.0;
+        double logP = 0.0;
+
+        logP = get_ge(timeOrigin.getValue(), tree.getRoot());
 
         return logP;
     }
