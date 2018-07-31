@@ -79,10 +79,6 @@ public class BirthDeathModelAnalytic extends SpeciesTreeDistribution {
 
                     logP = logP + Math.log(samplingRate.getValue())
                             + Math.log(get_q(thisNode.getHeight(), c1, c2));
-//                            + Math.log(get_p0(thisNode.getHeight(),
-//                                    birthRate.getValue(),
-//                                    deathRate.getValue(),
-//                                    samplingRate.getValue(), c1, c2));
                 } else {
                     // sample at present day
 

@@ -201,9 +201,8 @@ public class BirthDeathModelNumeric extends SpeciesTreeDistribution {
                 "timeOrigin", new RealParameter(String.valueOf(t0)),
                 "tree", tree);
 
-        double p0numeric = bdmodelNumeric.get_p0(t);
-        double[] p0ge = bdmodelNumeric.get_gep0(t, tree.getRoot());
-        double geNumeric = bdmodelNumeric.get_ge(t, tree.getRoot());
+        double p0numeric = bdmodelNumeric.get_p0(t0);
+        double geNumeric = bdmodelNumeric.get_ge(t0, tree.getRoot());
 
         BirthDeathModelAnalytic bdmodelAnalytic = new BirthDeathModelAnalytic();
         bdmodelAnalytic.initByName("birthRate", new RealParameter(String.valueOf(b)),
@@ -216,8 +215,7 @@ public class BirthDeathModelNumeric extends SpeciesTreeDistribution {
         double c1 = bdmodelAnalytic.get_c1(b, d, s);
         double c2 = bdmodelAnalytic.get_c2(b, d, s, rho, c1);
 
-        double p0analytic = bdmodelAnalytic.get_p0(t, b, d, s, c1, c2);
-//        double geAnalytic = 4*rho/bdmodelAnalytic.get_q(t, c1, c2);
+        double p0analytic = bdmodelAnalytic.get_p0(t0, b, d, s, c1, c2);
         double geAnalytic = Math.exp(bdmodelAnalytic.calculateTreeLogLikelihood(tree));
 
         System.out.println("p0: " + p0analytic + "\t" + p0numeric);
