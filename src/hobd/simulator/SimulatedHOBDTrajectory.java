@@ -1,6 +1,7 @@
 package hobd.simulator;
 
 import beast.util.Randomizer;
+import hobd.HOBDModelParams;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -8,9 +9,9 @@ import java.util.Map;
 
 public class SimulatedHOBDTrajectory extends HOBDTrajectory {
 
-    public HOBDParams params;
+    public HOBDModelParams params;
 
-    public SimulatedHOBDTrajectory(HOBDParams params) {
+    public SimulatedHOBDTrajectory(HOBDModelParams params) {
 
         this.params = params;
 
@@ -38,8 +39,7 @@ public class SimulatedHOBDTrajectory extends HOBDTrajectory {
             else
                 currentState.time = Double.POSITIVE_INFINITY;
 
-            if (currentState.time > params.T){
-                currentState.time = params.T;
+            if (currentState.time > params.getOriginTime()){
                 break;
             }
 
@@ -61,7 +61,7 @@ public class SimulatedHOBDTrajectory extends HOBDTrajectory {
                 throw new IllegalStateException("Reaction selection loop fell through.");
 
             if (event.type == HOBDEvent.HOBDEventType.BURST)
-                event.count = 2+(int)Randomizer.nextPoisson(params.burstSize);
+                event.count = 2+(int)Randomizer.nextPoisson(params.getBurstSize());
             else
                 event.count = 1;
 
@@ -72,11 +72,11 @@ public class SimulatedHOBDTrajectory extends HOBDTrajectory {
         // Rho sampling
 
         HOBDEvent rhoSamplingEvent = new HOBDEvent();
-        rhoSamplingEvent.time = params.T;
+        rhoSamplingEvent.time = params.getOriginTime();
         rhoSamplingEvent.type = HOBDEvent.HOBDEventType.RHOSAMPLE;
         rhoSamplingEvent.count = 0;
         for (long i=0; i<currentState.popSize; i++) {
-            if (Randomizer.nextDouble() < params.rhoSampleProb)
+            if (Randomizer.nextDouble() < params.getPresentSamplingProb())
                 rhoSamplingEvent.count += 1;
         }
 
@@ -85,7 +85,7 @@ public class SimulatedHOBDTrajectory extends HOBDTrajectory {
         // Final marker event
 
         HOBDEvent finalEvent = new HOBDEvent();
-        finalEvent.time = currentState.time;
+        finalEvent.time = params.getOriginTime();
         finalEvent.type = HOBDEvent.HOBDEventType.END;
         finalEvent.count = 1;
 
@@ -96,7 +96,7 @@ public class SimulatedHOBDTrajectory extends HOBDTrajectory {
 
     public static void main(String[] args) {
 
-        HOBDParams params = new HOBDParams(1.2, 1.0,
+        HOBDModelParams params = new HOBDModelParams(1.2, 1.0,
                 0.2, 10, 0.1, 0.1,
                 3.0);
 

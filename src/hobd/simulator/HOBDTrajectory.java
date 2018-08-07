@@ -8,6 +8,8 @@ public class HOBDTrajectory {
     protected List<HOBDEvent> eventList;
     protected List<HOBDState> stateList;
 
+    protected List<HOBDEvent> samplingEvents;
+
     protected boolean stateListDirty = true;
 
     public HOBDTrajectory() {
@@ -46,6 +48,8 @@ public class HOBDTrajectory {
         }
 
         stateList = new ArrayList<>();
+        samplingEvents = new ArrayList<>();
+
         long currentPopSize = 1;
 
         stateList.add(new HOBDState(0.0, currentPopSize));
@@ -53,7 +57,22 @@ public class HOBDTrajectory {
         for (HOBDEvent event : eventList) {
             currentPopSize += event.getDelta();
             stateList.add(new HOBDState(event.time, currentPopSize));
+
+            if (event.isSample())
+                samplingEvents.add(event);
         }
+    }
+
+    public int getSampleCount() {
+        updateStateList();
+
+        return samplingEvents.size();
+    }
+
+    public List<HOBDEvent> getSamplingEvents() {
+        updateStateList();
+
+        return samplingEvents;
     }
 
     public void print(PrintStream ps) {

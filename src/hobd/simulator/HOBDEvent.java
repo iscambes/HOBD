@@ -22,4 +22,8 @@ public class HOBDEvent {
                 throw new IllegalArgumentException("Unknown event type.");
         }
     }
+
+    public boolean isSample() {
+        return type == HOBDEventType.PSISAMPLE || type == HOBDEventType.RHOSAMPLE;
+    }
 }

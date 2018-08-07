@@ -211,7 +211,7 @@ public class HOBDModel extends SpeciesTreeDistribution {
                     childStates.add(get_gep0(node.getHeight(), childNode));
                 }
 
-                state[0] = childStates[0];
+//                state[0] = childStates[0];
 
 
 
