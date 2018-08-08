@@ -29,9 +29,9 @@ public class SimulatedHOBDTree extends Tree {
         params = paramsInput.get();
         minSampleCount = minSampleCountInput.get();
 
-        simulate();
-
         super.initAndValidate();
+
+        simulate();
     }
 
     void simulate() {
@@ -50,6 +50,7 @@ public class SimulatedHOBDTree extends Tree {
         List<Node> activeLineages = new ArrayList<>();
 
         int samplesRemaining = traj.getSampleCount();
+        int nextInternalNodeNr = traj.getSampleCount();
 
         int eventIdx = 0;
         while (samplesRemaining>0 || activeLineages.size()>1) {
@@ -73,6 +74,7 @@ public class SimulatedHOBDTree extends Tree {
                     activeLineages.remove(right);
 
                     Node parent = new Node();
+                    parent.setNr(nextInternalNodeNr++);
                     parent.addChild(left);
                     parent.addChild(right);
                     parent.setHeight(age);
@@ -106,10 +108,12 @@ public class SimulatedHOBDTree extends Tree {
 
     public static void main(String[] args) {
 
+        Randomizer.setSeed(15);
+
         SimulatedHOBDTree tree = new SimulatedHOBDTree();
 
-        HOBDModelParams params = new HOBDModelParams(1.2, 1.0,
-                0.0, 10, 0.1, 0.1,
+        HOBDModelParams params = new HOBDModelParams(1.3, 0.8,
+                0.0, 10, 0.3, 0.1,
                 3.0);
 
         tree.initByName("modelParams", params);

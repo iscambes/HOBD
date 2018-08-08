@@ -1,7 +1,7 @@
 package hobd.simulator;
 
 public class HOBDEvent {
-    public enum HOBDEventType {BIRTH, BURST, DEATH, PSISAMPLE, RHOSAMPLE, END};
+    public enum HOBDEventType {BIRTH, BURST, DEATH, PSISAMPLE, RHOSAMPLE};
     public HOBDEventType type;
     public double time;
     public int count;
@@ -16,8 +16,6 @@ public class HOBDEvent {
             case PSISAMPLE:
             case RHOSAMPLE:
                 return -count;
-            case END:
-                return 0;
             default:
                 throw new IllegalArgumentException("Unknown event type.");
         }
@@ -25,5 +23,10 @@ public class HOBDEvent {
 
     public boolean isSample() {
         return type == HOBDEventType.PSISAMPLE || type == HOBDEventType.RHOSAMPLE;
+    }
+
+    @Override
+    public String toString() {
+        return type + " (count " + count + ") at time " + time;
     }
 }

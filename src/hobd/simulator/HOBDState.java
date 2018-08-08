@@ -31,4 +31,9 @@ public class HOBDState {
         propensities.put(HOBDEvent.HOBDEventType.PSISAMPLE,
                 params.getSamplingRate()*popSize);
     }
+
+    @Override
+    public String toString() {
+        return "PopSize: " + popSize + " Time: " + time;
+    }
 }

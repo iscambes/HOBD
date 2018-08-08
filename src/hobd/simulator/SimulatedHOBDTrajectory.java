@@ -84,13 +84,6 @@ public class SimulatedHOBDTrajectory extends HOBDTrajectory {
 
         // Final marker event
 
-        HOBDEvent finalEvent = new HOBDEvent();
-        finalEvent.time = params.getOriginTime();
-        finalEvent.type = HOBDEvent.HOBDEventType.END;
-        finalEvent.count = 1;
-
-        eventList.add(finalEvent);
-
         stateListDirty = true;
     }
 

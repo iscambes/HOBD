@@ -58,15 +58,18 @@ public class HOBDTrajectory {
             currentPopSize += event.getDelta();
             stateList.add(new HOBDState(event.time, currentPopSize));
 
-            if (event.isSample())
+            if (event.isSample() && event.count>0)
                 samplingEvents.add(event);
         }
     }
 
     public int getSampleCount() {
-        updateStateList();
+        int count = 0;
 
-        return samplingEvents.size();
+        for (HOBDEvent event : getSamplingEvents())
+            count += event.count;
+
+        return count;
     }
 
     public List<HOBDEvent> getSamplingEvents() {
