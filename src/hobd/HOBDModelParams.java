@@ -16,7 +16,7 @@ public class HOBDModelParams extends CalculationNode {
             "Burst rate", Input.Validate.REQUIRED);
 
     public Input<RealParameter> burstSizeInput = new Input<>("burstSize",
-            "Mean burst rate", Input.Validate.REQUIRED);
+            "Mean burst size (nr. of new infections)", Input.Validate.REQUIRED);
 
     public Input<RealParameter> samplingRateInput = new Input<>("samplingRate",
             "Sampling rate.", Input.Validate.REQUIRED);

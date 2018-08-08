@@ -1,16 +1,15 @@
 package hobd.simulator;
 
 import beast.core.Input;
-import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
 import beast.math.Binomial;
 import beast.util.Randomizer;
 import hobd.HOBDModelParams;
+import pitchfork.util.CollapsedPitchforkTree;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 public class SimulatedHOBDTree extends Tree {
@@ -60,7 +59,7 @@ public class SimulatedHOBDTree extends Tree {
             HOBDState state = stateList.get(eventIdx);
 
             int n = activeLineages.size();
-            double I = state.popSize;
+            long I = Math.round(state.popSize);
             double age = params.getOriginTime() - event.time;
 
             double pCoal;
@@ -90,13 +89,16 @@ public class SimulatedHOBDTree extends Tree {
                     if (n<2)
                         break;
 
-                    double[] p = new double[n-1];
-
                     int burstSize = event.count;
+                    int maxK = Math.min(n, burstSize+1);
+
+                    double[] p = new double[maxK-1];
 
                     pCoal = 0.0;
-                    for (int k=2; k<=n; k++) {
-                        p[k-2] = Math.exp(Binomial.logChoose(burstSize, k) + Binomial.logChoose(n, k) - Binomial.logChoose((int)Math.round(I), k));
+                    for (int k=2; k<=maxK; k++) {
+                        p[k-2] = Math.exp(Binomial.logChoose(burstSize+1, k)
+                                + Binomial.logChoose((int)I-burstSize-1, n-k)
+                                - Binomial.logChoose((int)I, n));
                         pCoal += p[k-2];
                     }
 
@@ -105,14 +107,12 @@ public class SimulatedHOBDTree extends Tree {
 
                     double u = Randomizer.nextDouble()*pCoal;
                     int k;
-                    for (k=2; k<=n; k++) {
+                    for (k=2; k<=maxK; k++) {
                         if (u<p[k-2])
                             break;
 
                         u -= p[k-2];
                     }
-
-                    System.out.println("Burst size " + burstSize + " k=" + k);
 
                     parent = new Node();
                     parent.setNr(nextInternalNodeNr++);
@@ -123,7 +123,18 @@ public class SimulatedHOBDTree extends Tree {
                         activeLineages.remove(child);
                         n -= 1;
 
-                        parent.addChild(child);
+                        if (i < 2) {
+                            parent.addChild(child);
+                        } else {
+                            Node dummyParent = new Node();
+                            dummyParent.setNr(nextInternalNodeNr++);
+                            dummyParent.setHeight(age);
+
+                            dummyParent.addChild(parent);
+                            dummyParent.addChild(child);
+
+                            parent = dummyParent;
+                        }
                     }
 
                     activeLineages.add(parent);
@@ -153,21 +164,17 @@ public class SimulatedHOBDTree extends Tree {
 
     public static void main(String[] args) {
 
-//        for (int s=1; s<100; s++) {
-//            Randomizer.setSeed(s);
-//
-//            System.out.println("** " + s + " **");
-        Randomizer.setSeed(3);
+        SimulatedHOBDTree tree = new SimulatedHOBDTree();
 
-            SimulatedHOBDTree tree = new SimulatedHOBDTree();
+        HOBDModelParams params = new HOBDModelParams(1.3, 0.8,
+                0.1, 10, 0.3, 0.1,
+                3.0);
 
-            HOBDModelParams params = new HOBDModelParams(1.3, 0.8,
-                    0.1, 10, 0.3, 0.1,
-                    3.0);
+        tree.initByName("modelParams", params);
 
-            tree.initByName("modelParams", params);
+        CollapsedPitchforkTree collapsedTree = new CollapsedPitchforkTree();
+        collapsedTree.initByName("tree", tree);
 
-            System.out.println(tree);
-//        }
+        System.out.println(collapsedTree);
     }
 }
