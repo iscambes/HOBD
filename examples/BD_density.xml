@@ -12,6 +12,7 @@
             <timeOrigin spec="RealParameter" value="5.0" id="origin"/>
         </distribution>
 
+
         <distribution id="distrib_numeric" spec="BirthDeathModelNumeric" tree="@tree">
             <birthRate idref="birthRate"/>
             <deathRate idref="deathRate"/>
@@ -27,6 +28,13 @@
             <rho idref="presentSamplingProb"/>
             <origin idref="origin"/>
         </distribution>
+
+
+
+
+
+
+
 
         <realParam spec="RealParameter" id="birthRate"
                    value="1.0" lower="0.5" upper="2"/>
@@ -53,6 +61,7 @@
             <log idref="distrib_analytic"/>
             <log idref="distrib_numeric"/>
             <log idref="distrib_bdsky"/>
+
         </logger>
 
         <logger spec="Logger" logEvery="1" fileName="$(filebase).log">
@@ -62,6 +71,7 @@
             <log idref="distrib_analytic"/>
             <log idref="distrib_numeric"/>
             <log idref="distrib_bdsky"/>
+
         </logger>
 
     </run>

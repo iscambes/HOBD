@@ -151,6 +151,9 @@
         </populationModel>
     </init>
 
+    // esto en verdad nos permite empezar por un arbol inicial aleatorio.
+
+
     <distribution id="posterior" spec="util.CompoundDistribution">
         <distribution id="prior" spec="util.CompoundDistribution">
             <distribution id="BirthDeath.t:Kailahun" spec="hobd.BirthDeathModelAnalytic" birthRate="@BDBirthRate.t:Kailahun" deathRate="@BDDeathRate.t:Kailahun"  samplingRate="@BDSamplingRate.t:Kailahun" tree="@Tree.t:Kailahun">
