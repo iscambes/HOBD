@@ -52,8 +52,6 @@ public class HOBDTrajectory {
 
         long currentPopSize = 1;
 
-        stateList.add(new HOBDState(0.0, currentPopSize));
-
         for (HOBDEvent event : eventList) {
             currentPopSize += event.getDelta();
             stateList.add(new HOBDState(event.time, currentPopSize));

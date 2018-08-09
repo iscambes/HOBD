@@ -61,7 +61,7 @@ public class SimulatedHOBDTrajectory extends HOBDTrajectory {
                 throw new IllegalStateException("Reaction selection loop fell through.");
 
             if (event.type == HOBDEvent.HOBDEventType.BURST)
-                event.count = 2+(int)Randomizer.nextPoisson(params.getBurstSize());
+                event.count = 1+(int)Randomizer.nextPoisson(params.getBurstSize());
             else
                 event.count = 1;
 
