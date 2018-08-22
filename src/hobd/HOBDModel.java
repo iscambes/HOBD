@@ -88,7 +88,8 @@ public class HOBDModel extends SpeciesTreeDistribution {
 
             double p0 = y[0];
 
-            yDot[0] = -(lambda + mu + psi + sup)*p0 + mu + (lambda*p0*p0) + (sup*(Math.exp(mean*(p0-1)))*p0);
+            yDot[0] = -(lambda + mu + psi + sup)*p0 + mu + (lambda*p0*p0) + (sup *p0 *Math.exp(mean *(p0-1)));
+
 
         }
     }
@@ -136,8 +137,8 @@ public class HOBDModel extends SpeciesTreeDistribution {
 
             ////ECUACIONES DIFERENCIALES.
 
-            double p0Dot = -(lambda + mu + psi + sup)*p0 + mu + (lambda*p0*p0) + (sup* Math.exp(mean *(p0-1))*p0);
-            double geDot = -(lambda + mu + psi + sup)*ge + (2*lambda*p0*ge) + (sup*(mean *p0+1)*Math.exp(mean *(p0-1))*ge);
+            double p0Dot = -(lambda + mu + psi + sup)*p0 + mu + (lambda*p0*p0) + (sup *p0 *Math.exp(mean *(p0-1)));
+            double geDot = -(lambda + mu + psi + sup)*ge + (2*lambda*p0*ge) + ((sup*ge*((mean*p0)+1))*Math.exp(mean *(p0-1)));
 
 
 
@@ -188,7 +189,7 @@ public class HOBDModel extends SpeciesTreeDistribution {
 
 
                 state[0] = state0[0];
-                state[1] = (birthRate.getValue() + 1) * state0[1] * state1[1];
+                state[1] = (birthRate.getValue()+1) * state0[1] * state1[1];
 
 
             }else{
@@ -199,11 +200,12 @@ public class HOBDModel extends SpeciesTreeDistribution {
                 double p0init = 0.0;
                 double geinit = 0.0;
 
-                for (int n=0; n<=k-2; n+=1) {
-                    geinit += Math.exp(-mean.getValue() + n*Math.log(mean.getValue()) - GammaFunction.lnGamma(1+n));
+                for (int n=0; n<=k-3; n++) {  // anteriormente, teniamos puesto n<-k-2. Ahora creemos que es k-3
+                    geinit += Math.exp(-mean.getValue() + n*Math.log(mean.getValue()) - GammaFunction.lnGamma(1+n)); //m esto corresponde a la distribucion de poissson. el factorial se asume que es equivalente a una distribucion gamma
+
                 }
 
-                geinit = 1.0 - geinit;
+                geinit = superRate.getValue() * (1.0 - geinit);
 
                 // esto que aparece ahora aqui abajo es para calcular p0. queremos simplemente calcular el p0 del primero, pues
                 //la altura del nodo es igual para todas las edges
@@ -230,7 +232,7 @@ public class HOBDModel extends SpeciesTreeDistribution {
                     samplingRate.getValue(), presentSamplingProb.getValue(),superRate.getValue(), mean.getValue());
 
         // AbstractIntegrator integrator = new EulerIntegrator(0.001);
-        AbstractIntegrator integrator = new ClassicalRungeKuttaIntegrator(0.1);
+        AbstractIntegrator integrator = new ClassicalRungeKuttaIntegrator(0.001);
 
         // Integrate ge and p0 along edge
         integrator.integrate(gep0equations, node.getHeight(), state, t, state);
