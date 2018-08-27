@@ -59,7 +59,7 @@ public class HOBDModel extends SpeciesTreeDistribution {
 
             double p0 = y[0];
 
-            yDot[0] = -(lambda + mu + psi + burstRate)*p0 + mu + (lambda + burstRate * Math.exp((meanBurstSize-1)*(p0-1))*p0*p0);
+            yDot[0] = -(lambda + mu + psi + burstRate)*p0 + mu + (lambda + burstRate * Math.exp((meanBurstSize-1)*(p0-1)))*p0*p0;
 
 
         }
