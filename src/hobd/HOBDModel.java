@@ -6,6 +6,7 @@ import beast.evolution.speciation.SpeciesTreeDistribution;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.TreeInterface;
 import beast.math.GammaFunction;
+import beast.math.distributions.Gamma;
 import beast.util.TreeParser;
 import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.exception.MaxCountExceededException;
@@ -14,6 +15,7 @@ import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import pitchfork.Pitchforks;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -33,15 +35,15 @@ public class HOBDModel extends SpeciesTreeDistribution {
 
     class ODEp0 implements FirstOrderDifferentialEquations {
 
-        double lambda, mu, psi, rho, mean, sup;
+        double lambda, mu, psi, rho, meanBurstSize, burstRate;
 
-        public ODEp0(double lambda, double mu, double psi, double rho, double mean, double sup) {
+        public ODEp0(double lambda, double mu, double psi, double rho, double meanBurstSize, double burstRate) {
             this.lambda = lambda;
             this.mu = mu;
             this.psi = psi;
             this.rho = rho;
-            this.mean = mean;
-            this.sup = sup;
+            this.meanBurstSize = meanBurstSize;
+            this.burstRate = burstRate;
 
 
         }
@@ -57,7 +59,7 @@ public class HOBDModel extends SpeciesTreeDistribution {
 
             double p0 = y[0];
 
-            yDot[0] = -(lambda + mu + psi + sup)*p0 + mu + (lambda*p0*p0) + (sup *p0 *Math.exp(mean *(p0-1)));
+            yDot[0] = -(lambda + mu + psi + burstRate)*p0 + mu + (lambda + burstRate * Math.exp((meanBurstSize-1)*(p0-1))*p0*p0);
 
 
         }
@@ -85,15 +87,15 @@ public class HOBDModel extends SpeciesTreeDistribution {
 
     public class ODEgep0 implements FirstOrderDifferentialEquations {
 
-        double lambda, mu, psi, rho, mean, sup;
+        double lambda, mu, psi, rho, meanBurstSize, burstRate;
 
-        public ODEgep0(double sup, double lambda, double mu, double psi, double rho, double mean) {
+        public ODEgep0(double burstRate, double lambda, double mu, double psi, double rho, double meanBurstSize) {
             this.lambda = lambda;
             this.mu = mu;
             this.psi = psi;
             this.rho = rho;
-            this.mean = mean;
-            this.sup = sup;
+            this.meanBurstSize = meanBurstSize;
+            this.burstRate = burstRate;
         }
         @Override
         public int getDimension() { return 2;
@@ -107,8 +109,9 @@ public class HOBDModel extends SpeciesTreeDistribution {
 
             ////ECUACIONES DIFERENCIALES.
 
-            double p0Dot = -(lambda + mu + psi + sup)*p0 + mu + (lambda*p0*p0) + (sup *p0 *Math.exp(mean *(p0-1)));
-            double geDot = -(lambda + mu + psi + sup)*ge + (2*lambda*p0*ge) + ((sup*ge*((mean*p0)+1))*Math.exp(mean *(p0-1)));
+            double p0Dot = -(lambda + mu + psi + burstRate)*p0 + mu + (lambda + burstRate * Math.exp((meanBurstSize-1)*(p0-1)))*p0*p0;
+            double geDot = -(lambda + mu + psi + burstRate)*ge + (2*lambda*p0*ge)
+                    + burstRate*Math.exp((meanBurstSize-1)*(p0-1))*(2 + (meanBurstSize-1)*p0)*p0*ge;
 
 
 
@@ -148,60 +151,45 @@ public class HOBDModel extends SpeciesTreeDistribution {
             //internal node
 
             List<Node> children = Pitchforks.getLogicalChildren(node);
+            List<double[]> childStates = new ArrayList<>();
 
             int k = children.size();
 
-            if (k==2.0) {
-
-
-                double[] state0 = get_gep0(node.getHeight(), children.get(0));    /// ANTES, EN VEZ DE CHILDREN 0 Y 1 METIAMOS DERECHA E IZQUIERDA. AHORA YA NO VAMOS A UTILIZRA ESO PORQUE ESTAMOS UTILIZADO EL PITCHFORKS.
-                double[] state1 = get_gep0(node.getHeight(), children.get(1));
-
-
-                state[0] = state0[0];
-                state[1] = (modelParams.getBirthRate()+1) * state0[1] * state1[1];
-
-
-            }else{
-
-                // aqui hemos creado un nuevo array. dice que calcular todos los gep0 de cada hijo (childNode) de todos los hijos (children).
-                // aqui vamos a obtener un array con los diferentes gep0 para todos los nodos.
-
-                double p0init = 0.0;
-                double geinit = 0.0;
-
-                for (int n=0; n<=k-3; n++) {  // anteriormente, teniamos puesto n<-k-2. Ahora creemos que es k-3
-                    geinit += Math.exp(-modelParams.getMeanBurstSize() + n*Math.log(modelParams.getMeanBurstSize())
-                            - GammaFunction.lnGamma(1+n)); //m esto corresponde a la distribucion de poissson. el factorial se asume que es equivalente a una distribucion gamma
-
-                }
-
-                geinit = modelParams.getBurstRate() * (1.0 - geinit);
-
-                // esto que aparece ahora aqui abajo es para calcular p0. queremos simplemente calcular el p0 del primero, pues
-                //la altura del nodo es igual para todas las edges
-
-                boolean isFirst = true;
-                for (Node childNode : children) {
-                    double[] childState = get_gep0(node.getHeight(), childNode);
-
-                    geinit *= childState[1];
-
-                    if (isFirst) {
-                        p0init = childState[0];
-                        isFirst = false;
-                    }
-                }
-
-                state[0] = p0init;
-                state[1] = geinit;
+            for (Node child : children) {
+                childStates.add(get_gep0(node.getHeight(), child));
             }
+
+            double term1;
+            if (k==2) {
+                term1 = modelParams.getBirthRate() * childStates.get(0)[1] * childStates.get(1)[1];
+            } else {
+                term1 = 0.0;
+            }
+
+            double p0 = childStates.get(0)[0];
+
+            double acc = Math.exp((modelParams.getMeanBurstSize()-1)*p0);
+
+            for (int n=1; n<=k-2; n++) {
+                acc -= Math.exp((n-1)*(Math.log(modelParams.getMeanBurstSize()-1) + Math.log(p0))
+                        - GammaFunction.lnGamma(n-1 + 1));
+            }
+
+            double term2 = modelParams.getBurstRate()*Math.exp(-(modelParams.getMeanBurstSize()-1))
+                    * 1.0/Math.pow(p0, k-2)
+                    * acc;
+
+            for (double[] childState : childStates)
+                term2 *= childState[1];
+
+            state[0] = p0;
+            state[1] = term1 + term2;
         }
 
 
-            ODEgep0 gep0equations = new ODEgep0(modelParams.getBirthRate(),modelParams.getDeathRate(),
-                    modelParams.getSamplingRate(), modelParams.getPresentSamplingProb(),
-                    modelParams.getBurstRate(), modelParams.getMeanBurstSize());
+        ODEgep0 gep0equations = new ODEgep0(modelParams.getBirthRate(),modelParams.getDeathRate(),
+                modelParams.getSamplingRate(), modelParams.getPresentSamplingProb(),
+                modelParams.getBurstRate(), modelParams.getMeanBurstSize());
 
         // AbstractIntegrator integrator = new EulerIntegrator(0.001);
         AbstractIntegrator integrator = new ClassicalRungeKuttaIntegrator(0.001);

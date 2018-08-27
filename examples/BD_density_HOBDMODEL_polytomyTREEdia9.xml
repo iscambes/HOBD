@@ -23,7 +23,7 @@
 
 
         <realParam spec="RealParameter" id="burstRate"
-                   value="1" lower="0" upper="10.0"/>
+                   value="1" lower="0" upper="100.0"/>
         <steps spec="IntegerParameter"
                value="100"/>
         <logScale spec="BooleanParameter" value="false"/>
@@ -36,11 +36,7 @@
         <logger spec="Logger" logEvery="1" fileName="$(filebase).log">
             <log idref="burstRate"/>
             <log idref="distrib_HOBDModel"/>
-
-
         </logger>
-
-
     </run>
 </beast>
 
