@@ -1,0 +1,100 @@
+<beast version="2.0" namespace="feast.mapping:hobd:beast.core.parameter:beast.util:beast.core:beast.evolution.speciation">
+
+    <tree  id="tree" spec="TreeParser" adjustTipHeights="false" offset="0"
+          newick="((1:0.03322815682982361,2:0.2131746638540264)5:1.95107210002472,(0:0.009944960969858307,3:0.704294959203581)6:1.5915571692215078)4:0.0;"/>
+
+
+    <run spec="DensityMapper">
+
+        <distribution id="distrib_analytic" spec="BirthDeathModelAnalytic" tree="@tree">
+            <birthRate idref="birthRate"/>
+            <deathRate idref="deathRate"/>
+            <samplingRate idref="samplingRate"/>
+            <presentSamplingProb spec="RealParameter" value="0.5" id="presentSamplingProb"/>
+            <timeOrigin spec="RealParameter" value="5.0" id="origin"/>
+        </distribution>
+
+
+
+        <distribution id="distrib_numeric" spec="BirthDeathModelNumeric" tree="@tree">
+            <birthRate idref="birthRate"/>
+            <deathRate idref="deathRate"/>
+            <samplingRate idref="samplingRate"/>
+            <presentSamplingProb idref="presentSamplingProb"/>
+            <timeOrigin idref="origin"/>
+        </distribution>
+
+
+        <distribution id="distrib_HOBDModel" spec="HOBDModel" tree="@tree">
+            <birthRate idref="birthRate"/>
+            <deathRate idref="deathRate"/>
+            <samplingRate idref="samplingRate"/>
+            <presentSamplingProb idref="presentSamplingProb"/>
+            <timeOrigin idref="origin"/>
+            <superRate spec="RealParameter" value="0.1" id="superRate"/>
+            <mean spec="RealParameter" value="10.0" id="mean"/>
+        </distribution>
+
+
+
+        <distribution id="distrib_bdsky" spec="BirthDeathSkylineModel" tree="@tree" conditionOnSurvival="false" conditionOnRhoSampling="false">
+            <birthRate idref="birthRate"/>
+            <deathRate idref="deathRate"/>
+            <samplingRate idref="samplingRate"/>
+            <rho idref="presentSamplingProb"/>
+            <origin idref="origin"/>
+        </distribution>
+
+
+
+        <realParam spec="RealParameter" id="birthRate"
+                   value="1.0" lower="0.3" upper="15"/>
+        <steps spec="IntegerParameter"
+               value="1000000"/>
+        <logScale spec="BooleanParameter" value="false"/>
+
+        <realParam spec="RealParameter" id="deathRate"
+                   value="0.5" lower="0.5" upper="2"/>
+        <steps spec="IntegerParameter"
+               value="1"/>
+        <logScale spec="BooleanParameter" value="false"/>
+
+        <realParam spec="RealParameter" id="samplingRate"
+                   value="0.5" lower="0.5" upper="2"/>
+        <steps spec="IntegerParameter"
+               value="1"/>
+        <logScale spec="BooleanParameter" value="false"/>
+
+
+
+
+
+
+
+
+        <logger spec="Logger" logEvery="1">
+            <log idref="birthRate"/>
+            <log idref="deathRate"/>
+            <log idref="samplingRate"/>
+            <log idref="distrib_analytic"/>
+            <log idref="distrib_numeric"/>
+            <log idref="distrib_bdsky"/>
+            <log idref="distrib_HOBDModel"/>
+
+        </logger>
+
+
+
+        <logger spec="Logger" logEvery="1" fileName="$(filebase).log">
+            <log idref="birthRate"/>
+            <log idref="deathRate"/>
+            <log idref="samplingRate"/>
+            <log idref="distrib_analytic"/>
+            <log idref="distrib_numeric"/>
+            <log idref="distrib_bdsky"/>
+            <log idref="distrib_HOBDModel"/>
+
+        </logger>
+
+    </run>
+</beast>

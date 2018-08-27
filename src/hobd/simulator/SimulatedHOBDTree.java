@@ -8,6 +8,8 @@ import beast.util.Randomizer;
 import hobd.HOBDModelParams;
 import pitchfork.util.CollapsedPitchforkTree;
 
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -22,6 +24,7 @@ public class SimulatedHOBDTree extends Tree {
 
     HOBDModelParams params;
     int minSampleCount;
+    HOBDTrajectory traj;
 
     @Override
     public void initAndValidate() {
@@ -36,7 +39,6 @@ public class SimulatedHOBDTree extends Tree {
 
     void simulate() {
 
-        HOBDTrajectory traj;
         do {
             traj = new SimulatedHOBDTrajectory(params);
         } while (traj.getSampleCount() < minSampleCount);
@@ -162,19 +164,49 @@ public class SimulatedHOBDTree extends Tree {
         assignFromWithoutID(new Tree(activeLineages.get(0)));
     }
 
-    public static void main(String[] args) {
+    HOBDTrajectory getTrajectory() {
+        return traj;
+
+    }
+
+
+
+    public static void main(String[] args) throws FileNotFoundException {
 
         SimulatedHOBDTree tree = new SimulatedHOBDTree();
 
-        HOBDModelParams params = new HOBDModelParams(1.3, 0.8,
-                0.1, 10, 0.3, 0.1,
-                3.0);
+        HOBDModelParams params = new HOBDModelParams(1.3, 0.5,
+                0.2, 8, 0.3, 1.0,
+                1.0);
 
         tree.initByName("modelParams", params);
 
         CollapsedPitchforkTree collapsedTree = new CollapsedPitchforkTree();
         collapsedTree.initByName("tree", tree);
 
+
         System.out.println(collapsedTree);
+//        tree.getTrajectory().print(new PrintStream("trajectory.txt"));
+        tree.getTrajectory().print(System.out);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     }
 }

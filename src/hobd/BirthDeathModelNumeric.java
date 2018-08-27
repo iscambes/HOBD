@@ -79,8 +79,8 @@ public class BirthDeathModelNumeric extends SpeciesTreeDistribution {
         ODEp0 p0equations = new ODEp0(birthRate.getValue(), deathRate.getValue(),
                 samplingRate.getValue(), presentSamplingProb.getValue());
 
-        // AbstractIntegrator integrator = new EulerIntegrator(0.001);
-        AbstractIntegrator integrator = new ClassicalRungeKuttaIntegrator(0.001);
+        AbstractIntegrator integrator = new EulerIntegrator(0.0001);
+        //AbstractIntegrator integrator = new ClassicalRungeKuttaIntegrator(0.1);
 
         double [] state = {1 - presentSamplingProb.getValue()};
 
@@ -163,8 +163,8 @@ public class BirthDeathModelNumeric extends SpeciesTreeDistribution {
         ODEgep0 gep0equations = new ODEgep0(birthRate.getValue(), deathRate.getValue(),
                 samplingRate.getValue(), presentSamplingProb.getValue());
 
-        // AbstractIntegrator integrator = new EulerIntegrator(0.001);
-        AbstractIntegrator integrator = new ClassicalRungeKuttaIntegrator(0.001);
+        AbstractIntegrator integrator = new EulerIntegrator(0.0001);
+        //AbstractIntegrator integrator = new ClassicalRungeKuttaIntegrator(0.1);
 
         // Integrate ge and p0 along edge
         integrator.integrate(gep0equations, node.getHeight(), state, t, state);
@@ -190,8 +190,8 @@ public class BirthDeathModelNumeric extends SpeciesTreeDistribution {
 
         double b=1.0, d = 0.5, s = 0.6, rho = 0.2, t0 = 5.0;
 
-        TreeParser tree = new TreeParser("(A:1.0,B:1.0):1.0;");
-//        TreeParser tree = new TreeParser("A:1.0;");
+//        TreeParser tree = new TreeParser("(A:1.0,B:1.0):1.0;");
+          TreeParser tree = new TreeParser("A:1.0;");
 
         BirthDeathModelNumeric bdmodelNumeric = new BirthDeathModelNumeric();
         bdmodelNumeric.initByName("birthRate", new RealParameter(String.valueOf(b)),

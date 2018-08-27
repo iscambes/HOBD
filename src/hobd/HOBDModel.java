@@ -266,6 +266,7 @@ public class HOBDModel extends SpeciesTreeDistribution {
 
 //        TreeParser tree = new TreeParser("A:1.0;");
 
+
         //SUPERSPREADING MODEL
 
         HOBDModel HOBDModel = new HOBDModel();
@@ -314,6 +315,10 @@ public class HOBDModel extends SpeciesTreeDistribution {
 
         System.out.println("p0: " + p0analytic + "\t" + p0HOBDModel + "\t" + p0numeric);
         System.out.println("ge: " + geAnalytic + "\t" + geHOBDMODEL + "\t" + geNumeric);
+
+
+
+
 
 
     }

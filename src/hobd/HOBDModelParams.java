@@ -15,8 +15,8 @@ public class HOBDModelParams extends CalculationNode {
     public Input<RealParameter> burstRateInput = new Input<>("burstRate",
             "Burst rate", Input.Validate.REQUIRED);
 
-    public Input<RealParameter> burstSizeInput = new Input<>("burstSize",
-            "Mean burst size (nr. of new infections)", Input.Validate.REQUIRED);
+    public Input<RealParameter> meanBurstSizeInput = new Input<>("meanBurstSize",
+            "Mean burst size (nr. of new infections - 1)", Input.Validate.REQUIRED);
 
     public Input<RealParameter> samplingRateInput = new Input<>("samplingRate",
             "Sampling rate.", Input.Validate.REQUIRED);
@@ -33,14 +33,14 @@ public class HOBDModelParams extends CalculationNode {
     public HOBDModelParams(double birthRate,
                            double deathRate,
                            double burstRate,
-                           double burstSize,
+                           double meanBurstSize,
                            double samplingRate,
                            double presentSamplingProb,
                            double originTime) {
         setInputValue(birthRateInput, birthRate);
         setInputValue(deathRateInput, deathRate);
         setInputValue(burstRateInput, burstRate);
-        setInputValue(burstSizeInput, burstSize);
+        setInputValue(meanBurstSizeInput, meanBurstSize);
         setInputValue(samplingRateInput, samplingRate);
         setInputValue(presentSamplingProbInput, presentSamplingProb);
         setInputValue(originTimeInput, originTime);
@@ -65,8 +65,8 @@ public class HOBDModelParams extends CalculationNode {
         return burstRateInput.get().getValue();
     }
 
-    public double getBurstSize() {
-        return burstSizeInput.get().getValue();
+    public double getMeanBurstSize() {
+        return meanBurstSizeInput.get().getValue();
     }
 
     public double getSamplingRate() {

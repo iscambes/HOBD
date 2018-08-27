@@ -1,0 +1,27 @@
+<beast version='2.0' namespace='master:master.model:master.steppers:master.conditions:master.postprocessors:master.outputs'>
+  <run spec='InheritanceTrajectory'
+       simulationTime = '5'	
+       samplePopulationSizes="true">
+
+    <model spec='Model' id='model'>
+      <population spec='Population' id='X' populationName='X'/>
+    
+      
+      <reaction spec='Reaction' reactionName="Birth" rate="0.5">
+	X -> 2X
+      </reaction>
+      <reaction spec='Reaction' reactionName="Death" rate="0.01">
+	X -> 0
+      </reaction>
+    </model>
+    
+    <initialState spec='InitState'>
+            <lineageSeed spec='Individual' population="@X"/>
+    </initialState>
+
+    <output spec='NewickOutput' fileName='BDMODEL.newick'/>
+    <output spec='NexusOutput' fileName='BDMODEL.nexus'/>
+    <output spec='JsonOutput' fileName='BDMODEL.json'/>
+  </run>
+</beast>
+

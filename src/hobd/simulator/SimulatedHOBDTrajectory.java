@@ -61,7 +61,7 @@ public class SimulatedHOBDTrajectory extends HOBDTrajectory {
                 throw new IllegalStateException("Reaction selection loop fell through.");
 
             if (event.type == HOBDEvent.HOBDEventType.BURST)
-                event.count = 1+(int)Randomizer.nextPoisson(params.getBurstSize());
+                event.count = 1+(int)Randomizer.nextPoisson(params.getMeanBurstSize());
             else
                 event.count = 1;
 
@@ -89,9 +89,10 @@ public class SimulatedHOBDTrajectory extends HOBDTrajectory {
 
     public static void main(String[] args) {
 
-        HOBDModelParams params = new HOBDModelParams(1.2, 1.0,
-                0.2, 10, 0.1, 0.1,
-                3.0);
+        HOBDModelParams params = new HOBDModelParams(1.2, 0.0,
+                0.2, 8, 0.0, 0.1,
+                2);
+
 
         SimulatedHOBDTrajectory traj = new SimulatedHOBDTrajectory(params);
 
