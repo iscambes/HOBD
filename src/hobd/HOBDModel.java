@@ -12,7 +12,6 @@ import org.apache.commons.math3.exception.MaxCountExceededException;
 import org.apache.commons.math3.ode.AbstractIntegrator;
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
-import org.apache.commons.math3.ode.nonstiff.EulerIntegrator;
 import pitchfork.Pitchforks;
 
 import java.util.List;
@@ -21,45 +20,15 @@ import java.util.List;
 
 public class HOBDModel extends SpeciesTreeDistribution {
 
-    public Input<RealParameter> birthRateInput = new Input<>("birthRate",
-            "Per-individual birth rate.", Input.Validate.REQUIRED);
+    public Input<HOBDModelParams> modelParamsInput = new Input<>("modelParams",
+            "Higher-order birth-death model parameters.",
+            Input.Validate.REQUIRED);
 
-    public Input<RealParameter> superRateInput = new Input<>("superRate",
-            "Per-individual super Rate.", Input.Validate.REQUIRED);
-
-    public Input<RealParameter> deathRateInput = new Input<>("deathRate",
-            "Per-individual death rate.", Input.Validate.REQUIRED);
-
-    public Input<RealParameter> samplingRateInput = new Input<>("samplingRate",
-            "Per-individual sampling rate.", Input.Validate.REQUIRED);
-
-    public Input<RealParameter> presentSamplingProbInput = new Input<>("presentSamplingProb",
-            "Per-individual present-day sampling probability.", Input.Validate.REQUIRED);
-
-    public Input<RealParameter> timeOriginInput = new Input<>("timeOrigin",
-            "Per-individual time Origin.", Input.Validate.REQUIRED);
-
-    public Input<RealParameter> meanInput = new Input<>("mean",
-            "Per-individual mean.", Input.Validate.REQUIRED);
-
-
-
-
-
-
-
-    RealParameter birthRate, superRate, deathRate, samplingRate, presentSamplingProb, timeOrigin, mean;
+    HOBDModelParams modelParams;
 
     @Override
     public void initAndValidate() {
-        birthRate = birthRateInput.get();
-        superRate = superRateInput.get();
-        deathRate = deathRateInput.get();
-        samplingRate = samplingRateInput.get();
-        presentSamplingProb = presentSamplingProbInput.get();
-        timeOrigin = timeOriginInput.get();
-        mean = meanInput.get();
-
+        modelParams = modelParamsInput.get();
     }
 
     class ODEp0 implements FirstOrderDifferentialEquations {
@@ -97,13 +66,14 @@ public class HOBDModel extends SpeciesTreeDistribution {
 
     public double get_p0(double t) {
 
-        ODEp0 p0equations = new ODEp0(birthRate.getValue(), deathRate.getValue(),
-                samplingRate.getValue(), presentSamplingProb.getValue(), superRate.getValue(), mean.getValue());
+        ODEp0 p0equations = new ODEp0(modelParams.getBirthRate(), modelParams.getDeathRate(),
+                modelParams.getSamplingRate(), modelParams.getPresentSamplingProb(),
+                modelParams.getBurstRate(), modelParams.getMeanBurstSize());
 
         //AbstractIntegrator integrator = new EulerIntegrator(0.02);
         AbstractIntegrator integrator = new ClassicalRungeKuttaIntegrator(0.001);
 
-        double [] state = {1 - presentSamplingProb.getValue()};
+        double [] state = {1 - modelParams.getPresentSamplingProb()};
 
         if (t>0) {
             integrator.integrate(p0equations, 0, state, t, state);
@@ -163,14 +133,14 @@ public class HOBDModel extends SpeciesTreeDistribution {
                 // psi-sampling
 
                 state[0] = get_p0(node.getHeight());
-                state[1] = samplingRate.getValue();
+                state[1] = modelParams.getSamplingRate();
 
             } else {
 
                 // rho-sampling
 
-                state[0] = 1-presentSamplingProb.getValue();
-                state[1] = presentSamplingProb.getValue();
+                state[0] = 1-modelParams.getPresentSamplingProb();
+                state[1] = modelParams.getPresentSamplingProb();
             }
 
         } else {
@@ -189,7 +159,7 @@ public class HOBDModel extends SpeciesTreeDistribution {
 
 
                 state[0] = state0[0];
-                state[1] = (birthRate.getValue()+1) * state0[1] * state1[1];
+                state[1] = (modelParams.getBirthRate()+1) * state0[1] * state1[1];
 
 
             }else{
@@ -201,11 +171,12 @@ public class HOBDModel extends SpeciesTreeDistribution {
                 double geinit = 0.0;
 
                 for (int n=0; n<=k-3; n++) {  // anteriormente, teniamos puesto n<-k-2. Ahora creemos que es k-3
-                    geinit += Math.exp(-mean.getValue() + n*Math.log(mean.getValue()) - GammaFunction.lnGamma(1+n)); //m esto corresponde a la distribucion de poissson. el factorial se asume que es equivalente a una distribucion gamma
+                    geinit += Math.exp(-modelParams.getMeanBurstSize() + n*Math.log(modelParams.getMeanBurstSize())
+                            - GammaFunction.lnGamma(1+n)); //m esto corresponde a la distribucion de poissson. el factorial se asume que es equivalente a una distribucion gamma
 
                 }
 
-                geinit = superRate.getValue() * (1.0 - geinit);
+                geinit = modelParams.getBurstRate() * (1.0 - geinit);
 
                 // esto que aparece ahora aqui abajo es para calcular p0. queremos simplemente calcular el p0 del primero, pues
                 //la altura del nodo es igual para todas las edges
@@ -228,8 +199,9 @@ public class HOBDModel extends SpeciesTreeDistribution {
         }
 
 
-            ODEgep0 gep0equations = new ODEgep0(birthRate.getValue(), deathRate.getValue(),
-                    samplingRate.getValue(), presentSamplingProb.getValue(),superRate.getValue(), mean.getValue());
+            ODEgep0 gep0equations = new ODEgep0(modelParams.getBirthRate(),modelParams.getDeathRate(),
+                    modelParams.getSamplingRate(), modelParams.getPresentSamplingProb(),
+                    modelParams.getBurstRate(), modelParams.getMeanBurstSize());
 
         // AbstractIntegrator integrator = new EulerIntegrator(0.001);
         AbstractIntegrator integrator = new ClassicalRungeKuttaIntegrator(0.001);
@@ -252,7 +224,7 @@ public class HOBDModel extends SpeciesTreeDistribution {
     public double calculateTreeLogLikelihood(TreeInterface tree) {
         double logP = 0.0;
 
-        logP = Math.log(get_ge(timeOrigin.getValue(), tree.getRoot())); // remember that    //f[T |λ,μ,ψ, tor = x0] = ge(tor)//
+        logP = Math.log(get_ge(modelParams.getOriginTime(), tree.getRoot())); // remember that    //f[T |λ,μ,ψ, tor = x0] = ge(tor)//
 
         return logP;
     }

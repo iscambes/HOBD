@@ -8,36 +8,33 @@
 
 
         <distribution id="distrib_HOBDModel" spec="HOBDModel" tree="@tree">
-            <birthRate spec="RealParameter" value="4.0" id="birthRate"/>
-            <deathRate spec="RealParameter" value="0.3" id="deathRate"/>
-            <samplingRate spec="RealParameter" value="0.3" id="samplingRate"/>
-            <presentSamplingProb spec="RealParameter" value="1.0" id="presentSamplingRate"/>
-            <timeOrigin spec="RealParameter" value="1.0" id="origin"/>
-            <superRate idref="superRate"/>
-            <mean spec="RealParameter" value="8.0" id="mean"/>
+            <modelParams spec="HOBDModelParams">
+                <birthRate spec="RealParameter" value="4.0" id="birthRate"/>
+                <deathRate spec="RealParameter" value="0.3" id="deathRate"/>
+                <samplingRate spec="RealParameter" value="0.3" id="samplingRate"/>
+                <presentSamplingProb spec="RealParameter" value="1.0" id="presentSamplingProb"/>
+                <originTime spec="RealParameter" value="1.0" id="origin"/>
+                <burstRate idref="burstRate"/>
+                <meanBurstSize spec="RealParameter" value="8.0" id="meanBurstSize"/>
+            </modelParams>
 
 
         </distribution>
 
 
-        <realParam spec="RealParameter" id="superRate"
-                   value="1" lower="0" upper="1.2"/>
+        <realParam spec="RealParameter" id="burstRate"
+                   value="1" lower="0" upper="10.0"/>
         <steps spec="IntegerParameter"
-               value="1000"/>
+               value="100"/>
         <logScale spec="BooleanParameter" value="false"/>
 
-
-
-
         <logger spec="Logger" logEvery="1">
-            <log idref="superRate"/>
+            <log idref="burstRate"/>
             <log idref="distrib_HOBDModel"/>
-
         </logger>
 
-
         <logger spec="Logger" logEvery="1" fileName="$(filebase).log">
-            <log idref="superRate"/>
+            <log idref="burstRate"/>
             <log idref="distrib_HOBDModel"/>
 
 

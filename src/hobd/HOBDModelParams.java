@@ -1,32 +1,15 @@
 package hobd;
 
-import beast.core.CalculationNode;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
 
-public class HOBDModelParams extends CalculationNode {
-
-    public Input<RealParameter> birthRateInput = new Input<>("birthRate",
-            "Birth rate", Input.Validate.REQUIRED);
-
-    public Input<RealParameter> deathRateInput = new Input<>("deathRate",
-            "Death rate", Input.Validate.REQUIRED);
+public class HOBDModelParams extends BirthDeathModelParams {
 
     public Input<RealParameter> burstRateInput = new Input<>("burstRate",
-            "Burst rate", Input.Validate.REQUIRED);
+            "Per-individual burst rate", Input.Validate.REQUIRED);
 
     public Input<RealParameter> meanBurstSizeInput = new Input<>("meanBurstSize",
             "Mean burst size (nr. of new infections - 1)", Input.Validate.REQUIRED);
-
-    public Input<RealParameter> samplingRateInput = new Input<>("samplingRate",
-            "Sampling rate.", Input.Validate.REQUIRED);
-
-    public Input<RealParameter> presentSamplingProbInput = new Input<>("presentSamplingProb",
-            "Present-day sampling prob.", Input.Validate.REQUIRED);
-
-    public Input<RealParameter> originTimeInput = new Input<>("originTime",
-            "Time between present and origin of process.",
-            Input.Validate.REQUIRED);
 
     public HOBDModelParams() { }
 
@@ -46,43 +29,11 @@ public class HOBDModelParams extends CalculationNode {
         setInputValue(originTimeInput, originTime);
     }
 
-    private void setInputValue(Input input, double value) {
-        input.setValue(new RealParameter(String.valueOf(value)), this);
-    }
-
-    @Override
-    public void initAndValidate() { }
-
-    public double getBirthRate() {
-        return birthRateInput.get().getValue();
-    }
-
-    public double getDeathRate() {
-        return deathRateInput.get().getValue();
-    }
-
     public double getBurstRate() {
         return burstRateInput.get().getValue();
     }
 
     public double getMeanBurstSize() {
         return meanBurstSizeInput.get().getValue();
-    }
-
-    public double getSamplingRate() {
-        return samplingRateInput.get().getValue();
-    }
-
-    public double getPresentSamplingProb() {
-        return presentSamplingProbInput.get().getValue();
-    }
-
-    public double getOriginTime() {
-        return originTimeInput.get().getValue();
-    }
-
-    @Override
-    protected boolean requiresRecalculation() {
-        return true;
     }
 }
