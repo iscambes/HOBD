@@ -185,7 +185,7 @@
             </prior>
 
             <prior id="MeanBurstSizePrior.t:Kailahun" name="distribution" x="@BDMeanBurstSize.t:Kailahun">
-                <OneOnX name="distr"/>
+                <distr spec="beast.math.distributions.Exponential" mean="10" offset="1.0"/>
             </prior>
 
             <prior id="DeathRatePrior.t:Kailahun" name="distribution" x="@BDDeathRate.t:Kailahun">
@@ -284,7 +284,7 @@
 
     <operator id="OriginScaler.t:Kailahun" spec="ScaleOperator" parameter="@BDOriginTime.t:Kailahun" scaleFactor="0.75" weight="3.0"/>
 
-    <logger id="tracelog" fileName="$(filebase).log" logEvery="100" model="@posterior" sanitiseHeaders="true" sort="smart">
+    <logger id="tracelog" fileName="$(filebase).log" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
         <log idref="posterior"/>
         <log idref="likelihood"/>
         <log idref="prior"/>
