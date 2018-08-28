@@ -138,18 +138,18 @@
         <parameter id="clockRate.c:Kailahun" name="stateNode">0.001</parameter>
         <parameter id="kappa.s:Kailahun" lower="0.0" name="stateNode">2.0</parameter>
         <parameter id="gammaShape.s:Kailahun" name="stateNode">1.0</parameter>
-        <parameter id="BDBirthRate.t:Kailahun" lower="0.0" name="stateNode" upper="10000.0">1.0</parameter>
-        <parameter id="BDBurstRate.t:Kailahun" lower="0.0" name="stateNode" upper="10000.0">1.0</parameter>
+        <parameter id="BDBirthRate.t:Kailahun" lower="0.0" name="stateNode" upper="10000.0">30</parameter>
+        <parameter id="BDBurstRate.t:Kailahun" lower="0.0" name="stateNode" upper="10000.0">0.1</parameter>
         <parameter id="BDMeanBurstSize.t:Kailahun" lower="1.0" name="stateNode" upper="10000.0">1.0</parameter>
-        <parameter id="BDDeathRate.t:Kailahun" lower="0.0" name="stateNode" upper="10000.0">1.0</parameter>
-        <parameter id="BDSamplingRate.t:Kailahun" lower="0.0" name="stateNode" upper="10000.0">0.5</parameter>
-        <parameter id="BDOriginTime.t:Kailahun" lower="0.0" name="stateNode" upper="10000.0">2</parameter>
+        <parameter id="BDDeathRate.t:Kailahun" lower="0.0" name="stateNode" upper="10000.0">30</parameter>
+        <parameter id="BDSamplingRate.t:Kailahun" lower="0.0" name="stateNode" upper="10000.0">0.1</parameter>
+        <parameter id="BDOriginTime.t:Kailahun" lower="0.0" name="stateNode" upper="10000.0">1.0</parameter>
         <parameter id="freqParameter.s:Kailahun" dimension="4" lower="0.0" name="stateNode" upper="1.0">0.25</parameter>
     </state>
 
     <init id="RandomTree.t:Kailahun" spec="beast.evolution.tree.RandomTree" estimate="false" initial="@Tree.t:Kailahun" taxa="@Kailahun">
         <populationModel id="ConstantPopulation0.t:Kailahun" spec="ConstantPopulation">
-            <parameter id="randomPopSize.t:Kailahun" name="popSize">0.1</parameter>
+            <parameter id="randomPopSize.t:Kailahun" name="popSize">0.01</parameter>
         </populationModel>
     </init>
 
@@ -160,11 +160,6 @@
 
     <distribution id="posterior" spec="util.CompoundDistribution">
         <distribution id="prior" spec="util.CompoundDistribution">
-
-            <!--distribution id="HOBModel.t:Kailahun" spec="hobd.HOBDModel" burtRate="@BDBurstRate.t:Kailahun" birthRate="@BDBirthRate.t:Kailahun" meanBurstSize="@BDMeanBurstRate.t:Kailahun" deathRate="@BDDeathRate.t:Kailahun" samplingRate="@BDSamplingRate.t:Kailahun" tree="@Tree.t:Kailahun">
-                <originTime idref="BDOriginTime.t:Kailahun"/>
-                <presentSamplingProb spec="beast.core.parameter.RealParameter" value="0.0"/>
-            </distribution-->
 
             <distribution id="HOBDModel.t:Kailahun" spec="hobd.HOBDModel" tree="@Tree.t:Kailahun">
                 <modelParams spec="hobd.HOBDModelParams">
@@ -190,7 +185,7 @@
             </prior>
 
             <prior id="MeanBurstSizePrior.t:Kailahun" name="distribution" x="@BDMeanBurstSize.t:Kailahun">
-                <distr spec="beast.math.distributions.Uniform" lower="1.0" upper="20"/>
+                <OneOnX name="distr"/>
             </prior>
 
             <prior id="DeathRatePrior.t:Kailahun" name="distribution" x="@BDDeathRate.t:Kailahun">
@@ -234,30 +229,48 @@
         </distribution>
     </distribution>
 
-    <operator id="StrictClockRateScaler.c:Kailahun" spec="ScaleOperator" parameter="@clockRate.c:Kailahun" scaleFactor="0.75" weight="3.0"/>
+    <!-- Clock model parameter operators -->
 
-    <operator id="strictClockUpDownOperator.c:Kailahun" spec="UpDownOperator" scaleFactor="0.75" weight="3.0">
-        <parameter idref="clockRate.c:Kailahun" name="up"/>
-        <tree idref="Tree.t:Kailahun" name="down"/>
-    </operator>
+    <operator id="StrictClockRateScaler.c:Kailahun" spec="ScaleOperator" parameter="@clockRate.c:Kailahun" scaleFactor="0.75" weight="3.0"/>
 
     <operator id="KappaScaler.s:Kailahun" spec="ScaleOperator" parameter="@kappa.s:Kailahun" scaleFactor="0.5" weight="0.1"/>
 
     <operator id="gammaShapeScaler.s:Kailahun" spec="ScaleOperator" parameter="@gammaShape.s:Kailahun" scaleFactor="0.5" weight="0.1"/>
 
-    <operator id="HOBDModelTreeScaler.t:Kailahun" spec="ScaleOperator" scaleFactor="0.5" tree="@Tree.t:Kailahun" weight="3.0"/>
+    <operator id="FrequenciesExchanger.s:Kailahun" spec="DeltaExchangeOperator" delta="0.01" weight="0.1">
+        <parameter idref="freqParameter.s:Kailahun"/>
+    </operator>
 
-    <operator id="HOBDModelTreeRootScaler.t:Kailahun" spec="ScaleOperator" rootOnly="true" scaleFactor="0.5" tree="@Tree.t:Kailahun" weight="3.0"/>
 
-    <operator id="HOBDModelhUniformOperator.t:Kailahun" spec="Uniform" tree="@Tree.t:Kailahun" weight="30.0"/>
+    <!-- Tree operators -->
 
-    <operator id="HOBDModelSubtreeSlide.t:Kailahun" spec="SubtreeSlide" tree="@Tree.t:Kailahun" weight="15.0"/>
+    <operator id="strictClockUpDownOperator.c:Kailahun" spec="pitchfork.operators.ScaleOperator" scaleFactor="0.75" weight="3.0">
+        <tree idref="Tree.t:Kailahun"/>
+        <parameterInverse idref="clockRate.c:Kailahun"/>
+    </operator>
 
-    <operator id="HOBDModelNarrow.t:Kailahun" spec="Exchange" tree="@Tree.t:Kailahun" weight="15.0"/>
+    <operator id="TreeScaler.t:Kailahun" spec="pitchfork.operators.ScaleOperator" scaleFactor="0.5" tree="@Tree.t:Kailahun" weight="0.0"/>
 
-    <operator id="HOBDModelWide.t:Kailahun" spec="Exchange" isNarrow="false" tree="@Tree.t:Kailahun" weight="3.0"/>
+    <operator id="TreeRootScaler.t:Kailahun" spec="pitchfork.operators.ScaleOperator" rootOnly="true" scaleFactor="0.5" tree="@Tree.t:Kailahun" weight="3.0"/>
 
-    <operator id="HOBDModelWilsonBalding.t:Kailahun" spec="WilsonBalding" tree="@Tree.t:Kailahun" weight="3.0"/>
+    <operator spec="pitchfork.operators.SPROperator" tree="@Tree.t:Kailahun" weight="5.0"
+              rootAttachLambda="1.0"
+              probCoalAttach="0.5"/>
+
+    <operator spec="pitchfork.operators.UniformOperator" tree="@Tree.t:Kailahun" weight="5.0"/>
+
+    <operator spec="pitchfork.operators.ExchangeOperator" tree="@Tree.t:Kailahun" weight="5.0"/>
+
+    <operator spec="pitchfork.operators.ExpandCollapseOperator" weight="5.0"
+              rootAttachLambda="1.0"
+              tree="@Tree.t:Kailahun"/>
+
+    <!-- Phylodynamic parameter operators -->
+
+    <operator spec="UpDownOperator" scaleFactor="0.75" weight="10.0">
+        <up idref="BDBurstRate.t:Kailahun"/>
+        <down idref="BDBirthRate.t:Kailahun"/>
+    </operator>
 
     <operator id="BirthRateScaler.t:Kailahun" spec="ScaleOperator" parameter="@BDBirthRate.t:Kailahun" scaleFactor="0.75" weight="3.0"/>
 
@@ -265,17 +278,13 @@
 
     <operator id="MeanBurstSizeScaler.t:Kailahun" spec="ScaleOperator" parameter="@BDMeanBurstSize.t:Kailahun" scaleFactor="0.75" weight="3.0"/>
 
-    <operator id="DeathRateScaler.t:Kailahun" spec="ScaleOperator" parameter="@BDDeathRate.t:Kailahun" scaleFactor="0.75" weight="3.0"/>
+    <!--operator id="DeathRateScaler.t:Kailahun" spec="ScaleOperator" parameter="@BDDeathRate.t:Kailahun" scaleFactor="0.75" weight="3.0"/-->
 
     <operator id="SamplingRateScaler.t:Kailahun" spec="ScaleOperator" parameter="@BDSamplingRate.t:Kailahun" scaleFactor="0.75" weight="3.0"/>
 
     <operator id="OriginScaler.t:Kailahun" spec="ScaleOperator" parameter="@BDOriginTime.t:Kailahun" scaleFactor="0.75" weight="3.0"/>
 
-    <operator id="FrequenciesExchanger.s:Kailahun" spec="DeltaExchangeOperator" delta="0.01" weight="0.1">
-        <parameter idref="freqParameter.s:Kailahun"/>
-    </operator>
-
-    <logger id="tracelog" fileName="$(filebase).log" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
+    <logger id="tracelog" fileName="$(filebase).log" logEvery="100" model="@posterior" sanitiseHeaders="true" sort="smart">
         <log idref="posterior"/>
         <log idref="likelihood"/>
         <log idref="prior"/>
@@ -292,6 +301,7 @@
         <parameter idref="BDSamplingRate.t:Kailahun" name="log"/>
         <parameter idref="BDOriginTime.t:Kailahun" name="log"/>
         <parameter idref="freqParameter.s:Kailahun" name="log"/>
+        <log spec="pitchfork.util.PolytomyStatsLogger" tree="@Tree.t:Kailahun" polytomyCountOnly="true"/>
     </logger>
 
     <logger id="screenlog" logEvery="1000">
@@ -299,6 +309,7 @@
         <log id="ESS.0" spec="util.ESS" arg="@posterior"/>
         <log idref="likelihood"/>
         <log idref="prior"/>
+        <log spec="pitchfork.util.PolytomyStatsLogger" tree="@Tree.t:Kailahun" polytomyCountOnly="true"/>
     </logger>
 
     <logger id="treelog.t:Kailahun" fileName="$(filebase).trees" logEvery="1000" mode="tree">

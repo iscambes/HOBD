@@ -12,6 +12,7 @@ import org.apache.commons.math3.exception.MaxCountExceededException;
 import org.apache.commons.math3.ode.AbstractIntegrator;
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.apache.commons.math3.ode.nonstiff.HighamHall54Integrator;
 import pitchfork.Pitchforks;
 
 import java.util.ArrayList;
@@ -67,7 +68,7 @@ public class HOBDModel extends SpeciesTreeDistribution {
         ODEp0 p0equations = new ODEp0(modelParams);
 
         //AbstractIntegrator integrator = new EulerIntegrator(0.02);
-        AbstractIntegrator integrator = new ClassicalRungeKuttaIntegrator(0.001);
+        AbstractIntegrator integrator = new ClassicalRungeKuttaIntegrator(t/100);
 
         double [] state = {1 - modelParams.getPresentSamplingProb()};
 
@@ -100,16 +101,16 @@ public class HOBDModel extends SpeciesTreeDistribution {
         public void computeDerivatives(double t, double[] y, double[] yDot) {
 
             double p0 = y[0];
-            double ge = Math.exp(y[1]);
+            double ge = y[1];
 
             ////ECUACIONES DIFERENCIALES.
 
             double p0Dot = -(lambda + mu + psi + burstRate)*p0 + mu + (lambda + burstRate * Math.exp((meanBurstSize-1)*(p0-1)))*p0*p0;
-            double log_geDot = -(lambda + mu + psi + burstRate) + (2*lambda*p0)
-                    + burstRate*Math.exp((meanBurstSize-1)*(p0-1))*(2 + (meanBurstSize-1)*p0)*p0;
+            double geDot = -(lambda + mu + psi + burstRate)*ge + (2*lambda*p0*ge)
+                    + burstRate*Math.exp((meanBurstSize-1)*(p0-1))*(2 + (meanBurstSize-1)*p0)*p0*ge;
 
             yDot[0] = p0Dot;
-            yDot[1] = log_geDot;
+            yDot[1] = geDot;
         }
     }
 
@@ -129,14 +130,14 @@ public class HOBDModel extends SpeciesTreeDistribution {
                 // psi-sampling
 
                 state[0] = get_p0(node.getHeight());
-                state[1] = Math.log(modelParams.getSamplingRate());
+                state[1] = modelParams.getSamplingRate();
 
             } else {
 
                 // rho-sampling
 
                 state[0] = 1-modelParams.getPresentSamplingProb();
-                state[1] = Math.log(modelParams.getPresentSamplingProb());
+                state[1] = modelParams.getPresentSamplingProb();
             }
 
         } else {
@@ -179,17 +180,18 @@ public class HOBDModel extends SpeciesTreeDistribution {
 
             double log_geChildren = 0.0;
             for (double[] childState : childStates)
-                log_geChildren += childState[1];
+                log_geChildren += Math.log(childState[1]);
 
             state[0] = p0;
-            state[1] = Math.log(term1 + term2) + log_geChildren;
+            state[1] = (term1 + term2)*Math.exp(log_geChildren);
         }
 
 
         ODEgep0 gep0equations = new ODEgep0(modelParams);
 
         // AbstractIntegrator integrator = new EulerIntegrator(0.001);
-        AbstractIntegrator integrator = new ClassicalRungeKuttaIntegrator(0.001);
+        AbstractIntegrator integrator = new ClassicalRungeKuttaIntegrator((t-node.getHeight())/100);
+//        AbstractIntegrator integrator = new HighamHall54Integrator(1e-3, 0.1, new double[] {1e-3, 1e-3}, new double[] {1e-5, 1e-5});
 
         // Integrate ge and p0 along edge
         integrator.integrate(gep0equations, node.getHeight(), state, t, state);
@@ -198,7 +200,7 @@ public class HOBDModel extends SpeciesTreeDistribution {
     }
         // once we know the state of a node, let's calculate the ge.
 
-    double get_log_ge(double t, Node node) {
+    double get_ge(double t, Node node) {
         return get_gep0(t, node)[1];
     }
 
@@ -207,13 +209,16 @@ public class HOBDModel extends SpeciesTreeDistribution {
 
     @Override
     public double calculateTreeLogLikelihood(TreeInterface tree) {
-        double logP = 0.0;
-
-        logP = get_log_ge(modelParams.getOriginTime(), tree.getRoot()); // remember that    //f[T |λ,μ,ψ, tor = x0] = ge(tor)//
-
-        return logP;
+        if (modelParams.getOriginTime()<tree.getRoot().getHeight() || modelParams.getMeanBurstSize()<1.0)
+            return Double.NEGATIVE_INFINITY;
+        else
+            return Math.log(get_ge(modelParams.getOriginTime(), tree.getRoot())); // remember that    //f[T |λ,μ,ψ, tor = x0] = ge(tor)//
     }
 
+    @Override
+    protected boolean requiresRecalculation() {
+        return true;
+    }
 
     public static void main(String[] args) {
 
@@ -237,7 +242,7 @@ public class HOBDModel extends SpeciesTreeDistribution {
                 "tree", tree);
 
         double p0HOBDModel = HOBDModel.get_p0(t0);
-        double geHOBDMODEL = HOBDModel.get_log_ge(t0, tree.getRoot());
+        double geHOBDMODEL = HOBDModel.get_ge(t0, tree.getRoot());
 
         //NUMERICALMODEL
 
