@@ -6,7 +6,6 @@ import beast.evolution.speciation.SpeciesTreeDistribution;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.TreeInterface;
 import beast.math.GammaFunction;
-import beast.math.distributions.Gamma;
 import beast.util.TreeParser;
 import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.commons.math3.exception.MaxCountExceededException;
@@ -37,15 +36,14 @@ public class HOBDModel extends SpeciesTreeDistribution {
 
         double lambda, mu, psi, rho, meanBurstSize, burstRate;
 
-        public ODEp0(double lambda, double mu, double psi, double rho, double meanBurstSize, double burstRate) {
-            this.lambda = lambda;
-            this.mu = mu;
-            this.psi = psi;
-            this.rho = rho;
-            this.meanBurstSize = meanBurstSize;
-            this.burstRate = burstRate;
+        public ODEp0(HOBDModelParams modelParams) {
+            this.lambda = modelParams.getBirthRate();
+            this.mu = modelParams.getDeathRate();
+            this.psi = modelParams.getSamplingRate();
+            this.rho = modelParams.getPresentSamplingProb();
 
-
+            this.burstRate = modelParams.getBurstRate();
+            this.meanBurstSize = modelParams.getMeanBurstSize();
         }
 
         @Override
@@ -68,9 +66,7 @@ public class HOBDModel extends SpeciesTreeDistribution {
 
     public double get_p0(double t) {
 
-        ODEp0 p0equations = new ODEp0(modelParams.getBirthRate(), modelParams.getDeathRate(),
-                modelParams.getSamplingRate(), modelParams.getPresentSamplingProb(),
-                modelParams.getBurstRate(), modelParams.getMeanBurstSize());
+        ODEp0 p0equations = new ODEp0(modelParams);
 
         //AbstractIntegrator integrator = new EulerIntegrator(0.02);
         AbstractIntegrator integrator = new ClassicalRungeKuttaIntegrator(0.001);
@@ -89,13 +85,14 @@ public class HOBDModel extends SpeciesTreeDistribution {
 
         double lambda, mu, psi, rho, meanBurstSize, burstRate;
 
-        public ODEgep0(double burstRate, double lambda, double mu, double psi, double rho, double meanBurstSize) {
-            this.lambda = lambda;
-            this.mu = mu;
-            this.psi = psi;
-            this.rho = rho;
-            this.meanBurstSize = meanBurstSize;
-            this.burstRate = burstRate;
+        public ODEgep0(HOBDModelParams modelParams) {
+            this.lambda = modelParams.getBirthRate();
+            this.mu = modelParams.getDeathRate();
+            this.psi = modelParams.getSamplingRate();
+            this.rho = modelParams.getPresentSamplingProb();
+
+            this.burstRate = modelParams.getBurstRate();
+            this.meanBurstSize = modelParams.getMeanBurstSize();
         }
         @Override
         public int getDimension() { return 2;
@@ -187,9 +184,7 @@ public class HOBDModel extends SpeciesTreeDistribution {
         }
 
 
-        ODEgep0 gep0equations = new ODEgep0(modelParams.getBirthRate(),modelParams.getDeathRate(),
-                modelParams.getSamplingRate(), modelParams.getPresentSamplingProb(),
-                modelParams.getBurstRate(), modelParams.getMeanBurstSize());
+        ODEgep0 gep0equations = new ODEgep0(modelParams);
 
         // AbstractIntegrator integrator = new EulerIntegrator(0.001);
         AbstractIntegrator integrator = new ClassicalRungeKuttaIntegrator(0.001);

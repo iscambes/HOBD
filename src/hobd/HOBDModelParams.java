@@ -9,7 +9,7 @@ public class HOBDModelParams extends BirthDeathModelParams {
             "Per-individual burst rate", Input.Validate.REQUIRED);
 
     public Input<RealParameter> meanBurstSizeInput = new Input<>("meanBurstSize",
-            "Mean burst size (nr. of new infections - 1)", Input.Validate.REQUIRED);
+            "Mean burst size (nr. of new infections)", Input.Validate.REQUIRED);
 
     public HOBDModelParams() { }
 
