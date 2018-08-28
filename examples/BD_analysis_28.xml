@@ -181,7 +181,8 @@
             </prior>
 
             <prior id="BurstRatePrior.t:Kailahun" name="distribution" x="@BDBurstRate.t:Kailahun">
-                <OneOnX name="distr"/>
+                <distr spec="beast.math.distributions.Uniform" lower="0" upper="1"/>
+                <!--OneOnX name="distr"/-->
             </prior>
 
             <prior id="MeanBurstSizePrior.t:Kailahun" name="distribution" x="@BDMeanBurstSize.t:Kailahun">
