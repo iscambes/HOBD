@@ -172,6 +172,10 @@ public class HOBDModel extends SpeciesTreeDistribution {
                         - GammaFunction.lnGamma(n-1 + 1));
             }
 
+            // TODO: Ensure that the reason acc sometimes dips below zero is indeed just a rounding error
+            // The following is a temporary hack:
+            acc = Math.max(acc, 0.0);
+
             double term2 = modelParams.getBurstRate()*Math.exp(-(modelParams.getMeanBurstSize()-1))
                     * 1.0/Math.pow(p0, k-2)
                     * acc;
@@ -207,7 +211,9 @@ public class HOBDModel extends SpeciesTreeDistribution {
     public double calculateTreeLogLikelihood(TreeInterface tree) {
         double logP = 0.0;
 
-        logP = Math.log(get_ge(modelParams.getOriginTime(), tree.getRoot())); // remember that    //f[T |λ,μ,ψ, tor = x0] = ge(tor)//
+        double P = get_ge(modelParams.getOriginTime(), tree.getRoot()); // remember that    //f[T |λ,μ,ψ, tor = x0] = ge(tor)//
+
+        logP = Math.log(P); // remember that    //f[T |λ,μ,ψ, tor = x0] = ge(tor)//
 
         return logP;
     }
